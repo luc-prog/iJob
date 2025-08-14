@@ -1,0 +1,290 @@
+import React, { useState } from 'react';
+import { 
+  View, 
+  TextInput, 
+  TouchableOpacity, 
+  StyleSheet, 
+  Alert,
+  Platform,
+  Image
+} from 'react-native';
+import { ThemedText } from '@/components/ThemedText';
+import { ThemedView } from '@/components/ThemedView';
+import { Link } from 'expo-router';
+import { 
+  registerWithEmail,
+  registerWithGoogle,
+  registerWithFacebook
+} from './authService';
+import { Google, Facebook } from '@/firebaseConfig';
+import { MaterialIcons } from '@expo/vector-icons';
+import * as WebBrowser from 'expo-web-browser';
+
+export default function SignUpScreen() {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+
+  const [_, googleResponse, googleAuth] = Google.useAuthRequest({
+    expoClientId: 'VOTRE_CLIENT_ID_EXPO_GOOGLE',
+    iosClientId: 'VOTRE_CLIENT_ID_IOS_GOOGLE',
+    androidClientId: 'VOTRE_CLIENT_ID_ANDROID_GOOGLE',
+  });
+
+  const [___, facebookResponse, facebookAuth] = Facebook.useAuthRequest({
+    clientId: 'VOTRE_CLIENT_ID_FACEBOOK',
+  });
+
+  const handleEmailSignUp = async () => {
+    if (!email || !password) {
+      Alert.alert('Erreur', 'Veuillez remplir tous les champs');
+      return;
+    }
+
+    if (password.length < 6) {
+      Alert.alert('Erreur', 'Le mot de passe doit contenir au moins 6 caractères');
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      await registerWithEmail(email, password);
+      Alert.alert('Succès', 'Inscription réussie!');
+    } catch (error: any) {
+      Alert.alert('Erreur', error.message);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleGoogleSignUp = async () => {
+    setIsLoading(true);
+    try {
+      if (Platform.OS === 'web') {
+        await googleAuth();
+      } else {
+        const result = await googleAuth();
+        if (result?.type === 'success') {
+          await registerWithGoogle(result.params.id_token);
+          Alert.alert('Succès', 'Connexion Google réussie!');
+        }
+      }
+    } catch (error: any) {
+      Alert.alert('Erreur', error.message);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleFacebookSignUp = async () => {
+    setIsLoading(true);
+    try {
+      if (Platform.OS === 'web') {
+        await facebookAuth();
+      } else {
+        const result = await facebookAuth();
+        if (result?.type === 'success') {
+          await registerWithFacebook(result.params.access_token);
+          Alert.alert('Succès', 'Connexion Facebook réussie!');
+        }
+      }
+    } catch (error: any) {
+      Alert.alert('Erreur', error.message);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  return (
+    <ThemedView style={styles.container}>
+      <Image
+        source={require('@/assets/images/logo.png')}
+        style={styles.logo}
+        resizeMode="contain"
+      />
+
+      <ThemedText type="title" style={styles.title}>Créer un compte</ThemedText>
+
+      {/* Formulaire Email/Mot de passe */}
+      <View style={styles.inputContainer}>
+        <MaterialIcons name="email" size={20} color="#666" style={styles.icon} />
+        <TextInput
+          placeholder="Email"
+          value={email}
+          onChangeText={setEmail}
+          keyboardType="email-address"
+          autoCapitalize="none"
+          style={styles.input}
+        />
+      </View>
+
+      <View style={styles.inputContainer}>
+        <MaterialIcons name="lock" size={20} color="#666" style={styles.icon} />
+        <TextInput
+          placeholder="Mot de passe"
+          value={password}
+          onChangeText={setPassword}
+          secureTextEntry
+          style={styles.input}
+        />
+      </View>
+
+      <TouchableOpacity 
+        style={styles.primaryButton}
+        onPress={handleEmailSignUp}
+        disabled={isLoading}
+      >
+        <ThemedText style={styles.buttonText}>
+          {isLoading ? 'Chargement...' : 'S\'inscrire avec Email'}
+        </ThemedText>
+      </TouchableOpacity>
+
+      <View style={styles.separator}>
+        <View style={styles.separatorLine} />
+        <ThemedText style={styles.separatorText}>OU</ThemedText>
+        <View style={styles.separatorLine} />
+      </View>
+
+      {/* Boutons sociaux */}
+      <TouchableOpacity 
+        style={[styles.socialButton, styles.googleButton]}
+        onPress={handleGoogleSignUp}
+        disabled={isLoading}
+      >
+        <Image 
+          source={require('@/assets/images/google-icon.png')} 
+          style={styles.socialIcon}
+        />
+        <ThemedText style={styles.socialButtonText}>
+          Continuer avec Google
+        </ThemedText>
+      </TouchableOpacity>
+
+      <TouchableOpacity 
+        style={[styles.socialButton, styles.facebookButton]}
+        onPress={handleFacebookSignUp}
+        disabled={isLoading}
+      >
+        <Image 
+          source={require('@/assets/images/facebook-icon.png')} 
+          style={styles.socialIcon}
+        />
+        <ThemedText style={styles.socialButtonText}>
+          Continuer avec Facebook
+        </ThemedText>
+      </TouchableOpacity>
+
+      <View style={styles.loginContainer}>
+        <ThemedText>Déjà un compte ? </ThemedText>
+        <Link href="/login" asChild>
+          <TouchableOpacity>
+            <ThemedText style={styles.loginLink}>Se connecter</ThemedText>
+          </TouchableOpacity>
+        </Link>
+      </View>
+    </ThemedView>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    padding: 24,
+    justifyContent: 'center',
+  },
+  logo: {
+    width: 120,
+    height: 120,
+    alignSelf: 'center',
+    marginBottom: 32,
+  },
+  title: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    marginBottom: 24,
+    textAlign: 'center',
+  },
+  inputContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#fff',
+    borderRadius: 8,
+    paddingHorizontal: 16,
+    marginBottom: 16,
+    borderWidth: 1,
+    borderColor: '#ddd',
+  },
+  icon: {
+    marginRight: 12,
+  },
+  input: {
+    flex: 1,
+    height: 56,
+    fontSize: 16,
+  },
+  primaryButton: {
+    backgroundColor: '#4a90e2',
+    borderRadius: 8,
+    height: 56,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginTop: 8,
+    marginBottom: 24,
+  },
+  buttonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  separator: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginVertical: 24,
+  },
+  separatorLine: {
+    flex: 1,
+    height: 1,
+    backgroundColor: '#ddd',
+  },
+  separatorText: {
+    marginHorizontal: 12,
+    color: '#666',
+  },
+  socialButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: 8,
+    height: 56,
+    marginBottom: 16,
+  },
+  googleButton: {
+    backgroundColor: '#fff',
+    borderWidth: 1,
+    borderColor: '#ddd',
+  },
+  facebookButton: {
+    backgroundColor: '#1877f2',
+  },
+  socialIcon: {
+    width: 24,
+    height: 24,
+    marginRight: 12,
+  },
+  socialButtonText: {
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  facebookButtonText: {
+    color: '#fff',
+  },
+  loginContainer: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    marginTop: 24,
+  },
+  loginLink: {
+    color: '#4a90e2',
+    fontWeight: 'bold',
+  },
+});
