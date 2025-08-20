@@ -40,9 +40,9 @@
     "expo-system-ui": "~5.0.10",
     "expo-web-browser": "~14.2.0",
     "firebase": "^12.1.0",
-    "react": "19.0.0",
-    "react-dom": "19.0.0",
-    "react-native": "0.79.5",
+    "react": "18.2.0",
+    "react-dom": "18.2.0",
+    "react-native": "0.74.3",
     "react-native-elements": "^3.4.3",
     "react-native-gesture-handler": "~2.24.0",
     "react-native-maps": "1.20.1",
@@ -55,7 +55,7 @@
     "react-native-web": "~0.20.0",
     "react-native-webview": "13.13.5",
     "socket.io-client": "^4.8.1",
-    "undefined": "expo-auth-session/providers/google"
+    "@react-native-google-signin/google-signin": "^15.0.0"
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",
