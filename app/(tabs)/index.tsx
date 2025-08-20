@@ -1,18 +1,18 @@
-import React from 'react';
-import { 
-  StyleSheet, 
-  View, 
-  ScrollView, 
-  TouchableOpacity, 
-  TextInput, 
-  Image, 
-  Text,
-  FlatList
-} from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import { useTheme } from '@react-navigation/native';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
+import { Ionicons } from '@expo/vector-icons';
+import { useNavigation, useTheme } from '@react-navigation/native';
+import React from 'react';
+import {
+  FlatList,
+  Image,
+  ScrollView,
+  StyleSheet,
+  TextInput,
+  TouchableOpacity,
+  View
+} from 'react-native';
+import { HomeScreenNavigationProp } from '../navigation';
 
 type CategoryItem = {
   id: string;
@@ -24,6 +24,7 @@ const HomeScreen = () => {
   const { colors } = useTheme();
   const userName = "Luc";
   const isProvider = false;
+     const navigation = useNavigation<HomeScreenNavigationProp>();
 
   // Données des catégories
   const categories = [
@@ -52,6 +53,44 @@ const HomeScreen = () => {
     { id: '2', title: 'Comptable', company: 'Finance Pro', city: 'Lubumbashi' },
     { id: '3', title: 'Infirmier', company: 'Hôpital Central', city: 'Kinshasa' },
   ];
+
+   // Fonction pour gérer la navigation
+  const handleCategoryPress = (categoryId: string) => {
+    switch (categoryId) {
+      case '1':
+        navigation.navigate('FindJob'); // Écran "Trouver un emploi"
+        break;
+      case '2':
+        navigation.navigate('HireProvider'); // Écran "Engager un prestataire"
+        break;
+      case '3':
+        navigation.navigate('publish'); // Écran "Publier une offre"
+        break;
+          case '4':
+        navigation.navigate('Bourse'); // Écran "Engager un prestataire"
+        break;
+          case '5':
+        navigation.navigate('Stage'); // Écran "Engager un prestataire"
+        break;
+          case '6':
+        navigation.navigate('Formation'); // Écran "Engager un prestataire"
+        break;
+        case '7':
+        navigation.navigate('profile'); // Écran "Engager un prestataire"
+        break;
+        case '8':
+        navigation.navigate('messages'); // Écran "Engager un prestataire"
+        break;
+         case '9':
+        navigation.navigate('Agedant'); // Écran "Engager un prestataire"
+        break;
+       
+      // Ajoutez les autres cas ici...
+      default:
+        break;
+        
+    }
+  };
 
   return (
     <ThemedView style={styles.container}>
@@ -96,10 +135,11 @@ const HomeScreen = () => {
         {/* Catégories principales */}
         <ThemedText type="subtitle" style={styles.sectionTitle}>Services</ThemedText>
         <View style={styles.categoriesContainer}>
-          {categories.map((category) => (
+{categories.map((category) => (
   <TouchableOpacity 
     key={category.id} 
     style={[styles.categoryCard, { backgroundColor: colors.card }]}
+    onPress={() => handleCategoryPress(category.id)} // Ajoutez cette ligne
   >
     <Ionicons 
       name={category.icon as keyof typeof Ionicons.glyphMap} 
@@ -307,7 +347,7 @@ const styles = StyleSheet.create({
   providerService: {
     textAlign: 'center',
     fontSize: 12,
-    color: '#666',
+    color: '#222',
     marginBottom: 4,
   },
   ratingContainer: {
