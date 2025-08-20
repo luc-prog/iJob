@@ -1,50 +1,74 @@
-# Welcome to your Expo app 👋
+# iJob (Expo) — Project README
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+Petit guide clair pour démarrer avec ce projet Expo + React Native (TypeScript).
 
-## Get started
+Résumé
+- App Expo (file-based routing). Écrite en React Native + Expo + Firebase.
+- Dossier principal des écrans : `app/` (ex. `app/register.tsx`, `app/login.tsx`, `app/(tabs)/profile.tsx`).
+- Configuration Firebase : `firebaseConfig.ts` à la racine.
 
-1. Install dependencies
+Prérequis
+- Node.js (LTS) et npm
+- Expo CLI (optionnel) : `npm install -g expo-cli`
+- Sous Windows, ouvrez PowerShell en Administrateur si vous rencontrez des erreurs de permissions.
 
-   ```bash
-   npm install
-   ```
+Installation
+1. Depuis la racine du projet (`c:\Norevia\projet_JobCon\jobconApp\iJob`) :
 
-2. Start the app
+   powershell> npm install
 
-   ```bash
-   npx expo start
-   ```
+2. Installer (si nécessaire) les dépendances recommandées pour Firebase/React Native :
 
-In the output, you'll find options to open the app in a
+   powershell> npm install firebase@latest @react-native-async-storage/async-storage
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+Lancement
+- Démarrer Metro / Expo :
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+  powershell> npx expo start
 
-## Get a fresh project
+- Exécuter sur un appareil Android (dev build / emulator) :
 
-When you're ready, run:
+  powershell> npm run android
 
-```bash
-npm run reset-project
-```
+- Exécuter sur iOS (macOS) :
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+  powershell> npm run ios
 
-## Learn more
+Configuration Firebase (important)
+- Le fichier `firebaseConfig.ts` contient la configuration. Vérifiez que vos clés sont correctes (apiKey, authDomain, projectId, storageBucket...).
+- Sur React Native, pour que l'état d'auth soit persistant entre sessions, installez `@react-native-async-storage/async-storage` et initialisez l'auth ainsi :
 
-To learn more about developing your project with Expo, look at the following resources:
+  ```ts
+  import { getApp, getApps, initializeApp } from 'firebase/app'
+  import { initializeAuth, getReactNativePersistence } from 'firebase/auth'
+  import AsyncStorage from '@react-native-async-storage/async-storage'
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+  const app = getApps().length ? getApp() : initializeApp(firebaseConfig)
+  const auth = initializeAuth(app, { persistence: getReactNativePersistence(AsyncStorage) })
+  ```
 
-## Join the community
+  - Si vous utilisez `getAuth(app)` et voyez un warning indiquant l'absence d'AsyncStorage, suivez la configuration ci-dessus.
+  - Évitez d'initialiser Firebase plusieurs fois ; utilisez `getApps().length ? getApp() : initializeApp(config)` pour prévenir l'erreur `app/duplicate-app`.
 
-Join our community of developers creating universal apps.
+Sauvegarde utilisateur et Realtime DB / Firestore
+- Le code d'inscription email utilise `createUserWithEmailAndPassword` (voir `app/register.tsx`).
+- Si vous enregistrez des données supplémentaires pour l'utilisateur, vérifiez l'écriture dans Realtime Database (`getDatabase`) ou Firestore (`getFirestore`).
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+Dépannage rapide
+- EPERM / symlink lors de `npm install` (Windows) :
+  - Fermez VS Code/éditeurs, désactivez antivirus temporairement.
+  - Ouvrez PowerShell en Administrateur et relancez l'installation.
+  - Si nécessaire supprimer `node_modules` et `package-lock.json` puis `npm install`.
+
+- Erreur `Firebase App named '[DEFAULT]' already exists`: utilisez la pattern `getApps()/getApp()` ci-dessus.
+
+Structure importante
+- `app/` : écrans et navigation
+- `components/` : composants réutilisables (`ThemedText`, `ThemedView`, etc.)
+- `firebaseConfig.ts` : point d'entrée Firebase
+
+Besoin d'aide
+- Si une erreur précise apparaît (log console / message d'erreur), copiez-la ici et je vous aide à la corriger rapidement.
+
+---
+Projet créé avec Expo — bonnes pratiques : redémarrez l'app après modification de la configuration Firebase et vérifiez toujours la console Firebase (Auth) pour confirmer les utilisateurs créés.
